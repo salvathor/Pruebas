@@ -1,43 +1,45 @@
-//
-//  PruebasUITests.swift
-//  PruebasUITests
-//
-//  Created by Salvador Lopez on 12/11/26.
-//
-
 import XCTest
+import XCUIAutomation
 
-final class PruebasUITests: XCTestCase {
-
+final class LoginUITests: XCTestCase {
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
-    }
-
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
     @MainActor
-    func testExample() throws {
-        // UI tests must launch the application that they test.
+    func testLoginMuestraAvisoDeDemostracion() {
         let app = XCUIApplication()
         app.launch()
+        defer { app.terminate() }
 
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // XCUIAutomation Documentation
-        // https://developer.apple.com/documentation/xcuiautomation
-    }
+        // La pantalla actual expone etiquetas de accesibilidad, no identificadores.
+        let correo = app.textFields["Correo electrónico"]
+        XCTAssertTrue(correo.waitForExistence(timeout: 5))
+        correo.tap()
+        correo.typeText("ana@ejemplo.com")
 
-    @MainActor
-    func testLaunchPerformance() throws {
-        // This measures how long it takes to launch your application.
-        measure(metrics: [XCTApplicationLaunchMetric()]) {
-            XCUIApplication().launch()
+        // SecureField se consulta mediante secureTextFields.
+        let password = app.secureTextFields["Contraseña"]
+        XCTAssertTrue(password.waitForExistence(timeout: 5))
+        password.tap()
+        password.typeText("ClavePrueba123")
+
+        let entrar = app.buttons["Iniciar sesión"]
+        XCTAssertTrue(entrar.waitForExistence(timeout: 5))
+        if !entrar.isHittable {
+            app.scrollViews.firstMatch.swipeUp()
         }
+        XCTAssertTrue(entrar.isHittable)
+        entrar.tap()
+
+        // El login todavía es una demostración: este es su resultado actual.
+        let aviso = app.alerts["Vista de demostración"]
+        XCTAssertTrue(aviso.waitForExistence(timeout: 5))
+        XCTAssertTrue(aviso.staticTexts[
+            "El inicio de sesión aún no está conectado. No se enviaron ni guardaron tus datos."
+        ].exists)
+
+        aviso.buttons["Entendido"].tap()
+        XCTAssertTrue(aviso.waitForNonExistence(timeout: 5))
     }
 }
