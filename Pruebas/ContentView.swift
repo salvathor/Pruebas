@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// Pantalla inicial que abre la prueba de UI mediante XCUIApplication.launch().
 struct ContentView: View {
     var body: some View {
         NavigationStack {
@@ -64,6 +65,8 @@ private struct AuthHeader: View {
     }
 }
 
+/// Formulario de demostración: el botón muestra un aviso, sin autenticar ni guardar datos.
+/// LoginUITest comprueba ese comportamiento observable desde la interfaz.
 private struct LoginForm: View {
     @State private var email = ""
     @State private var password = ""
@@ -188,6 +191,7 @@ private struct PasswordRecoveryView: View {
     }
 }
 
+/// Su etiqueta «Correo electrónico» permite localizar el campo en LoginUITest.
 private struct EmailField: View {
     @Binding var email: String
 
@@ -259,6 +263,10 @@ private extension View {
     ContentView()
 }
 
+#Preview {
+    PasswordRecoveryView()
+}
+
 #Preview("Registro") {
     NavigationStack {
         RegistrationView()
@@ -266,17 +274,57 @@ private extension View {
     .tint(.indigo)
 }
 
+/// Lógica independiente de la interfaz usada por CalculadoraTest.
+/// Los métodos static permiten invocarla sin crear una instancia.
 enum Calculadora {
+    /// Error de dominio; Equatable permite comparar el error esperado en una prueba.
     enum ErrorMath: Error, Equatable {
         case divisionPorCero
     }
+    /// Devuelve la suma de dos enteros dentro del rango representable por Int.
     static func suma(_ a: Int, _ b: Int) -> Int {
        a + b
     }
+    /// División entera: descarta la parte fraccionaria (por ejemplo, 7 / 2 devuelve 3).
+    /// - Throws: ErrorMath.divisionPorCero si el divisor es cero.
+    /// No maneja desbordamientos de Int; las pruebas actuales usan valores pequeños.
     static func divide(_ a: Int, _ b: Int) throws -> Int {
         guard b != 0 else {
             throw ErrorMath.divisionPorCero
         }
         return a / b
     }
+}
+
+/// Valor del carrito. Decimal representa el precio y Equatable permite comparar productos.
+struct Producto: Equatable {
+    let nombre: String
+    let precio: Decimal
+}
+
+/// Objeto mutable probado en CarritoTests; cada prueba crea su propia instancia.
+final class Carrito {
+    
+    // Las pruebas pueden leer productos; solo Carrito puede modificar el arreglo.
+    private(set) var productos: [Producto] = []
+    
+    /// Añade un producto. Actualmente permite repetidos y no valida el precio.
+    func agregar(_ p: Producto){
+        productos.append(p)
+    }
+    
+    /// Devuelve la primera coincidencia exacta por nombre, o nil si no existe.
+    func buscar(_ nombre: String) -> Producto? {
+        productos.first {
+            $0.nombre == nombre
+        }
+    }
+    
+    /// Suma los precios desde cero; un carrito vacío tiene total cero.
+    var total: Decimal {
+        productos.reduce(0) {
+            $0 + $1.precio
+        }
+    }
+    
 }

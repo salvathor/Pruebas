@@ -14,6 +14,7 @@
     { "kind": "folder", "path": "Pruebas", "target-membership": [ "Pruebas" ] },
     { "kind": "folder", "path": "PruebasTests", "target-membership": [ "PruebasTests" ] },
     { "kind": "folder", "path": "PruebasUITests", "target-membership": [ "PruebasUITests" ] },
+    { "path": "README.md", "target-membership": [ "Pruebas/resources" ] },
     {
       "kind": "group",
       "name": "Products",
